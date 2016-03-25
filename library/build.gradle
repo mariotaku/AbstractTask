@@ -24,12 +24,16 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+repositories {
+    jcenter();
+}
+
 uploadArchives {
     repositories {
-        mavenDeployer {
+        mavenInstaller {
             pom.version = android.defaultConfig.versionName
             pom.groupId = 'com.github.mariotaku'
-            pom.artifactId = 'AbstractTask'
+            pom.artifactId = rootProject.name
         }
     }
 }
