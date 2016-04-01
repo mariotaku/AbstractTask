@@ -14,12 +14,13 @@ public abstract class AbstractTask<Params, Result, Callback> {
 
     private Params mParams;
     private WeakReference<Callback> mCallbackRef;
+    private boolean mIsFinished;
 
     @WorkerThread
     protected abstract Result doLongOperation(Params params);
 
     @MainThread
-    protected void beforeExecute(Params params) {
+    protected void beforeExecute() {
 
     }
 
@@ -52,13 +53,18 @@ public abstract class AbstractTask<Params, Result, Callback> {
         return mParams;
     }
 
+    public final boolean isFinished() {
+        return mIsFinished;
+    }
+
     @MainThread
     final void invokeBeforeExecute() {
-        beforeExecute(mParams);
+        beforeExecute();
     }
 
     @MainThread
     final void invokeAfterExecute(Result result) {
+        mIsFinished = true;
         Callback callback = getCallback();
         if (callback != null) {
             afterExecute(callback, result);
