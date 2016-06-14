@@ -25,12 +25,7 @@ public abstract class AbstractTask<Params, Result, Callback> {
     }
 
     @MainThread
-    protected void afterExecute(Result result) {
-
-    }
-
-    @MainThread
-    protected void afterExecute(Callback callback, Result result) {
+    protected void afterExecute(@Nullable Callback callback, Result result) {
 
     }
 
@@ -66,11 +61,7 @@ public abstract class AbstractTask<Params, Result, Callback> {
     final void invokeAfterExecute(Result result) {
         mIsFinished = true;
         Callback callback = getCallback();
-        if (callback != null) {
-            afterExecute(callback, result);
-        } else {
-            afterExecute(result);
-        }
+        afterExecute(callback, result);
     }
 
     @WorkerThread
