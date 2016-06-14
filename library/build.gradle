@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 23
@@ -24,16 +24,16 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-repositories {
-    jcenter();
-}
-
 uploadArchives {
     repositories {
         mavenInstaller {
-            pom.version = android.defaultConfig.versionName
             pom.groupId = 'com.github.mariotaku'
-            pom.artifactId = rootProject.name
+            pom.version = android.defaultConfig.versionName
+            pom.artifactId = 'AbstractTask'
         }
     }
+}
+
+repositories {
+    jcenter()
 }
