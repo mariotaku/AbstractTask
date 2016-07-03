@@ -33,7 +33,11 @@ public abstract class AbstractTask<Params, Result, Callback> {
         mParams = params;
     }
 
-    public final AbstractTask<Params, Result, Callback> setResultHandler(Callback callback) {
+    public final Params getParams() {
+        return mParams;
+    }
+
+    public final AbstractTask<Params, Result, Callback> setCallback(Callback callback) {
         mCallbackRef = new WeakReference<>(callback);
         return this;
     }
@@ -42,10 +46,6 @@ public abstract class AbstractTask<Params, Result, Callback> {
     protected final Callback getCallback() {
         if (mCallbackRef == null) return null;
         return mCallbackRef.get();
-    }
-
-    protected final Params getParams() {
-        return mParams;
     }
 
     public final boolean isFinished() {
