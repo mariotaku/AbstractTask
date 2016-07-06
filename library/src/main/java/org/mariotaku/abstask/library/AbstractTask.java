@@ -43,7 +43,7 @@ public abstract class AbstractTask<Params, Result, Callback> {
     }
 
     @Nullable
-    protected final Callback getCallback() {
+    public final Callback getCallback() {
         if (mCallbackRef == null) return null;
         return mCallbackRef.get();
     }
