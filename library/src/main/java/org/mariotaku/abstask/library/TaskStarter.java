@@ -33,6 +33,12 @@ public class TaskStarter {
 
         AsyncTaskTask(AbstractTask<P, R, C> task) {
             this.task = task;
+            task.mController = new AbstractTask.TaskController() {
+                @Override
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    return AsyncTaskTask.this.cancel(mayInterruptIfRunning);
+                }
+            };
         }
 
         @Override
@@ -48,6 +54,11 @@ public class TaskStarter {
         @Override
         protected void onPostExecute(R r) {
             task.invokeAfterExecute(r);
+        }
+
+        @Override
+        protected void onCancelled(R r) {
+            task.invokeCancelled(r);
         }
     }
 
