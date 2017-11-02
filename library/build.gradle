@@ -2,14 +2,14 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion "26.0.2"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 7
-        versionName "0.9.6"
+        targetSdkVersion 27
+        versionCode 8
+        versionName "0.9.7"
     }
     buildTypes {
         release {
@@ -17,12 +17,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-}
-
-repositories {
-    mavenLocal()
-    jcenter()
-    google()
 }
 
 dependencies {
