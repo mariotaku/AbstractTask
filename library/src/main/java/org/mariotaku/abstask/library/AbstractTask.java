@@ -13,11 +13,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class AbstractTask<Params, Result, Callback> {
 
-    TaskController mController;
-    private Params mParams;
+    TaskEngine.TaskController mController;
+    TaskEngine.TaskDispatcher<Params, Result, Callback> mDispatcher = new TaskEngine.TaskDispatcher<>(this);
+    Params mParams;
     private WeakReference<Callback> mCallbackRef;
-    private final AtomicBoolean mFinished = new AtomicBoolean(false);
-    private final AtomicBoolean mCancelled = new AtomicBoolean(false);
+    final AtomicBoolean mFinished = new AtomicBoolean(false);
+    final AtomicBoolean mCancelled = new AtomicBoolean(false);
 
     @WorkerThread
     protected abstract Result doLongOperation(Params params);
@@ -28,12 +29,18 @@ public abstract class AbstractTask<Params, Result, Callback> {
     }
 
     @MainThread
+    @Deprecated
     protected void afterExecute(@Nullable Callback callback, Result result) {
 
     }
 
     @MainThread
-    protected void cancelled(@Nullable Callback callback, @Nullable Result result) {
+    protected void afterExecute(@Nullable Callback callback, Result result, boolean cancelled) {
+        afterExecute(callback, result);
+    }
+
+    @MainThread
+    protected void cancelRequested() {
 
     }
 
@@ -64,6 +71,10 @@ public abstract class AbstractTask<Params, Result, Callback> {
         return mCancelled.get();
     }
 
+    public final void execute(TaskEngine engine) {
+        engine.execute(this);
+    }
+
     public final boolean cancel(boolean mayInterruptIfRunning) {
         if (mCancelled.get()) return false;
         mCancelled.set(true);
@@ -74,35 +85,4 @@ public abstract class AbstractTask<Params, Result, Callback> {
         }
     }
 
-    @WorkerThread
-    final Result invokeExecute() {
-        return doLongOperation(mParams);
-    }
-
-    @MainThread
-    final void invokeBeforeExecute() {
-        beforeExecute();
-    }
-
-    @MainThread
-    final void invokeAfterExecute(Result result) {
-        mFinished.set(true);
-        Callback callback = getCallback();
-        if (isCancelled()) {
-            cancelled(callback, result);
-        } else {
-            afterExecute(callback, result);
-        }
-    }
-
-    @MainThread
-    final void invokeCancelled(@Nullable Result result) {
-        mFinished.set(true);
-        Callback callback = getCallback();
-        cancelled(callback, result);
-    }
-
-    interface TaskController {
-        boolean cancel(boolean mayInterruptIfRunning);
-    }
 }
