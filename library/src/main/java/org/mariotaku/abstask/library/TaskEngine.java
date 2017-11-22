@@ -1,31 +1,40 @@
 package org.mariotaku.abstask.library;
 
+import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class TaskEngine {
-    public abstract <Params, Result, Callback> void execute(AbstractTask<Params, Result, Callback> task);
+    public abstract <Params, Result, Throw extends Exception, Callback> void execute(@NonNull AbstractTask<Params, Result, Throw, Callback> task);
 
-    protected static <P, R, C> TaskDispatcher getDispatcher(AbstractTask<P, R, C> task) {
+    @NonNull
+    protected static <P, R, T extends Exception, C> TaskDispatcher<P, R, T, C> getDispatcher(@NonNull AbstractTask<P, R, T, C> task) {
         return task.mDispatcher;
     }
+
+    protected static <P, R, T extends Exception, C> void setController(@NonNull AbstractTask<P, R, T, C> task, @Nullable TaskController controller) {
+        task.mController = controller;
+    }
+
 
     protected interface TaskController {
         boolean cancel(boolean mayInterruptIfRunning);
     }
 
-    protected final static class TaskDispatcher<Params, Result, Callback> {
+    protected final static class TaskDispatcher<Params, Result, Throw extends Exception, Callback> {
 
-        private final AbstractTask<Params, Result, Callback> mTask;
+        @NonNull
+        private final AbstractTask<Params, Result, Throw, Callback> mTask;
 
-        public TaskDispatcher(AbstractTask<Params, Result, Callback> task) {
+        public TaskDispatcher(@NonNull AbstractTask<Params, Result, Throw, Callback> task) {
             mTask = task;
         }
 
         @WorkerThread
-        public Result invokeExecute() {
+        public Result invokeExecute() throws Throw {
             return mTask.doLongOperation(mTask.mParams);
         }
 
@@ -35,15 +44,14 @@ public abstract class TaskEngine {
         }
 
         @MainThread
-        public void invokeAfterExecute(Result result) {
+        public void invokeAfterExecute(@Nullable Result result, @Nullable Throw error) {
             mTask.mFinished.set(true);
             Callback callback = mTask.getCallback();
-            mTask.afterExecute(callback, result, mTask.isCancelled());
+            mTask.afterExecute(callback, result, error, mTask.isCancelled());
         }
 
-        @MainThread
-        public void invokeCancelled(@Nullable Result result) {
-            mTask.mCancelled.set(true);
+        @AnyThread
+        public void invokeCancelRequested() {
             mTask.cancelRequested();
         }
 

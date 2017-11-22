@@ -1,5 +1,6 @@
 package org.mariotaku.abstask.library;
 
+import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
@@ -11,23 +12,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Abstract Task class can be used with different implementations
  * Created by mariotaku on 16/2/24.
  */
-public abstract class AbstractTask<Params, Result, Callback> {
+@SuppressWarnings("WeakerAccess")
+public abstract class AbstractTask<Params, Result, Throw extends Exception, Callback> {
 
     TaskEngine.TaskController mController;
-    TaskEngine.TaskDispatcher<Params, Result, Callback> mDispatcher = new TaskEngine.TaskDispatcher<>(this);
+    TaskEngine.TaskDispatcher<Params, Result, Throw, Callback> mDispatcher = new TaskEngine.TaskDispatcher<>(this);
     Params mParams;
     private WeakReference<Callback> mCallbackRef;
     final AtomicBoolean mFinished = new AtomicBoolean(false);
     final AtomicBoolean mCancelled = new AtomicBoolean(false);
 
     @WorkerThread
-    protected abstract Result doLongOperation(Params params);
+    protected abstract Result doLongOperation(Params params) throws Throw;
 
     @MainThread
     protected void beforeExecute() {
 
     }
 
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @MainThread
     @Deprecated
     protected void afterExecute(@Nullable Callback callback, Result result) {
@@ -35,11 +38,12 @@ public abstract class AbstractTask<Params, Result, Callback> {
     }
 
     @MainThread
-    protected void afterExecute(@Nullable Callback callback, Result result, boolean cancelled) {
+    protected void afterExecute(@Nullable Callback callback, Result result, Throw error, boolean cancelled) {
+        //noinspection deprecation
         afterExecute(callback, result);
     }
 
-    @MainThread
+    @AnyThread
     protected void cancelRequested() {
 
     }
@@ -52,7 +56,7 @@ public abstract class AbstractTask<Params, Result, Callback> {
         return mParams;
     }
 
-    public final AbstractTask<Params, Result, Callback> setCallback(Callback callback) {
+    public final AbstractTask<Params, Result, Throw, Callback> setCallback(Callback callback) {
         mCallbackRef = new WeakReference<>(callback);
         return this;
     }
