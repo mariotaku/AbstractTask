@@ -11,7 +11,7 @@ public class TaskStarter {
 
     private static AtomicReference<TaskEngine> sDefaultEngine = new AtomicReference<>();
 
-    public static <Params, Result, Callback> void execute(AbstractTask<Params, Result, Callback> task) {
+    public static <Params, Result, Throw extends Exception, Callback> void execute(AbstractTask<Params, Result, Throw, Callback> task) {
         task.execute(obtainDefaultEngine());
     }
 
